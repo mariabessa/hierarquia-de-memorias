@@ -26,15 +26,9 @@ void updateMachineInfos(Machine* machine, Line* line) {
             break;
         
         case 3:
-            machine->hitL3 += 1;
-            machine->missL2 += 1;
-            machine->missL1 += 1;
-
-        case 4:
             machine->hitRAM += 1;
             machine->missL1 += 1;
             machine->missL2 += 1;
-            machine->missL3 += 1;
             break;
     }
     machine->totalCost += line->cost;
@@ -58,6 +52,7 @@ Line* MMUSearchOnMemorys(Address add, Machine* machine) {
     } else if (cache2[l2pos].tag == add.block) { 
         /* Block is in memory cache L2 */
         cache2[l2pos].tag = add.block;
+        cache2[l2pos].updated = false;
         cache2[l2pos].cost = COST_ACCESS_L1 + COST_ACCESS_L2;
         cache2[l2pos].cacheHit = 2;
         // !Can be improved?
@@ -76,7 +71,7 @@ Line* MMUSearchOnMemorys(Address add, Machine* machine) {
         cache1[l1pos].block = RAM[add.block];
         cache1[l1pos].tag = add.block;
         cache1[l1pos].updated = false;
-        cache1[l1pos].cost = COST_ACCESS_L1 + COST_ACCESS_L2 + COST_ACCESS_L3 + COST_ACCESS_RAM;
+        cache1[l1pos].cost = COST_ACCESS_L1 + COST_ACCESS_L2 + COST_ACCESS_RAM;
         cache1[l1pos].cacheHit = 3;
     }
     updateMachineInfos(machine, &(cache1[l1pos]));

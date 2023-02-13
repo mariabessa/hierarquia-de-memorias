@@ -126,10 +126,9 @@ void run(Machine* machine) {
     int PC = 0; // Program Counter
     while(machine->instructions[PC].opcode != -1) {
         executeInstruction(machine, PC++);
-        printf("\tL1:(%6d, %6d) | L2:(%6d, %6d) | L3:(%6d, %6d) | RAM:(%6d) | COST: %d\n", 
+        printf("\tL1:(%6d, %6d) | L2:(%6d, %6d) | RAM:(%6d) | COST: %d\n", 
             machine->hitL1, machine->missL1, 
             machine->hitL2, machine->missL2, 
-            machine->hitL3, machine->missL3,
             machine->hitRAM,
              machine->totalCost);
     }
@@ -151,37 +150,25 @@ void printcolored(int n, bool updated) {
 void printMemories(Machine* machine) {
     printf("\x1b[0;30;47m     ");
     printc("RAM", WORDS_SIZE * 8 - 1);
-    printc("Cache L3", WORDS_SIZE * 8 + 6);
     printc("Cache L2", WORDS_SIZE * 8 + 6);
     printc("Cache L1", WORDS_SIZE * 8 + 6);
     printf("\x1b[0m\n");
- 
- //Quadro da RAM 
-    for (int i = 0; i < machine->ram.size; i++) {
+    for (int i=0;i<machine->ram.size;i++) {
         printf("\x1b[0;30;47m%5d|\x1b[0m", i);
         for (int j=0;j<WORDS_SIZE;j++)
             printf(" %5d |", machine->ram.blocks[i].words[j]);
-        //CACHE L3
-        if (i < machine->l3.size) {
+        if (i < machine->l2.size) {
+            printf("|");
+            printcolored(machine->l2.lines[i].tag, machine->l2.lines[i].updated);
+            for (int j=0;j<WORDS_SIZE;j++)
+                printf(" %5d |", machine->l2.lines[i].block.words[j]);
+            if (i < machine->l1.size) {
                 printf("|");
-                printcolored(machine->l3.lines[i].tag, machine->l3.lines[i].updated);
+                printcolored(machine->l1.lines[i].tag, machine->l1.lines[i].updated);
                 for (int j=0;j<WORDS_SIZE;j++)
-                    printf(" %5d |", machine->l3.lines[i].block.words[j]);
-                //CACHE L2
-                    if (i < machine->l2.size) {
-                        printf("|");
-                        printcolored(machine->l2.lines[i].tag, machine->l2.lines[i].updated);
-                        for (int j=0;j<WORDS_SIZE;j++)
-                            printf(" %5d |", machine->l2.lines[i].block.words[j]);
-                    //CACHE L1
-                            if (i < machine->l1.size) {
-                                printf("|");
-                                printcolored(machine->l1.lines[i].tag, machine->l1.lines[i].updated);
-                                for (int j=0;j<WORDS_SIZE;j++)
-                                    printf(" %5d |", machine->l1.lines[i].block.words[j]);
+                    printf(" %5d |", machine->l1.lines[i].block.words[j]);
             }
         }
         printf("\n");
-    }
     }
 }
