@@ -11,6 +11,9 @@ bool canOnlyReplaceBlock(Line line) {
 }
 
 int memoryCacheMapping(int address, Cache* cache) {
+
+    //Mexer aqui, mapeamento
+
     return address % cache->size;
 }
 
@@ -40,9 +43,11 @@ Line* MMUSearchOnMemorys(Address add, Machine* machine) {
     // Direct memory map
     int l1pos = memoryCacheMapping(add.block, &machine->l1);
     int l2pos = memoryCacheMapping(add.block, &machine->l2);
+    int l3pos = memoryCacheMapping(add.block, &machine->l3);
 
     Line* cache1 = machine->l1.lines;
     Line* cache2 = machine->l2.lines;
+    Line* cache3 = machine->l3.lines;
     MemoryBlock* RAM = machine->ram.blocks;
 
     if (cache1[l1pos].tag == add.block) { 
