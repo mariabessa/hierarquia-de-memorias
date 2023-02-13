@@ -9,7 +9,7 @@ int main(int argc, char**argv) {
 
     srand(1507);   // Inicializacao da semente para os numeros aleatorios.
 
-    if (argc != 5) {
+    if (argc != 6) {
         printf("Numero de argumentos invalidos! Sao 5.\n");
         printf("Linha de execucao: ./exe TIPO_INSTRUCAO [TAMANHO_RAM|ARQUIVO_DE_INSTRUCOES] TAMANHO_L1 TAMANHO_L2\n");
         printf("\tExemplo 1 de execucao: ./exe random 10 2 4\n");
@@ -23,6 +23,7 @@ int main(int argc, char**argv) {
 
     memoriesSize[1] = atoi(argv[3]);
     memoriesSize[2] = atoi(argv[4]);
+    memoriesSize[3] = atoi(argv[5]);
     if (strcmp(argv[1], "random") == 0) {
         memoriesSize[0] = atoi(argv[2]);
         instructions = generateRandomInstructions(memoriesSize[0]);
@@ -36,10 +37,10 @@ int main(int argc, char**argv) {
     
     printf("Starting machine...\n");
     start(&machine, instructions, memoriesSize);
-    if (memoriesSize[0] < 10)
+    if (memoriesSize[0] < 20)
         printMemories(&machine);
     run(&machine);
-    if (memoriesSize[0] < 10)
+    if (memoriesSize[0] < 20)
         printMemories(&machine);
     stop(&machine);
     printf("Stopping machine...\n");
