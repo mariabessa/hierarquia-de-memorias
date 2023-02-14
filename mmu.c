@@ -15,6 +15,10 @@ int memoryCacheMapping(int address, Cache* cache) {
     //Mexer aqui, mapeamento
 
     return address % cache->size;
+
+
+        //usar contadores nos cases abaixo para fazer o mapeamento asssociativo, e os que tiver menor numero é o resultado
+
 }
 
 void updateMachineInfos(Machine* machine, Line* line) {
@@ -82,23 +86,27 @@ Line* MMUSearchOnMemorys(Address add, Machine* machine) {
         return &(cache3[l3pos]);
     }
     else{ 
-        l3pos = memoryCacheMapping(cache2[l2pos].tag, &machine->l3);
-        if(!canOnlyReplaceBlock(cache2[l2pos])){
-
-            if(!canOnlyReplaceBlock(cache3[l3pos]))
-                RAM[cache3[l3pos].tag] = cache3[l3pos].block;
-            cache3[l3pos] = cache2[l2pos];
-        }
 
         /* Block only in memory RAM, need to bring it to cache and manipulate the blocks */
         l2pos = memoryCacheMapping(cache1[l1pos].tag, &machine->l2); /* Need to check the position of the block that will leave the L1 */
+
+        l3pos = memoryCacheMapping(cache2[l2pos].tag, &machine->l3);
+
         if (!canOnlyReplaceBlock(cache1[l1pos])) { 
-            
+        
+        //Falta arrumar, nao pronto
+
             /* The block on cache L1 cannot only be replaced, the memories must be updated */
             if (!canOnlyReplaceBlock(cache2[l2pos])) 
                 /* The block on cache L2 cannot only be replaced, the memories must be updated */
                 RAM[cache2[l2pos].tag] = cache2[l2pos].block;
             cache2[l2pos] = cache1[l1pos];
+
+            if(!canOnlyReplaceBlock(cache3[l3pos]))
+                RAM[cache3[l3pos].tag] = cache3[l3pos].block;
+            cache3[l3pos] = cache2[l2pos];
+
+
         }
         cache1[l1pos].block = RAM[add.block];
         cache1[l1pos].tag = add.block;
