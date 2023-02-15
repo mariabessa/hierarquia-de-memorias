@@ -97,15 +97,18 @@ Line* MMUSearchOnMemorys(Address add, Machine* machine) {
         //Falta arrumar, nao pronto
 
             /* The block on cache L1 cannot only be replaced, the memories must be updated */
-            if (!canOnlyReplaceBlock(cache2[l2pos])) 
+            if (!canOnlyReplaceBlock(cache2[l2pos])){ 
                 /* The block on cache L2 cannot only be replaced, the memories must be updated */
                 RAM[cache2[l2pos].tag] = cache2[l2pos].block;
+
+                if(!canOnlyReplaceBlock(cache3[l3pos]))
+                    RAM[cache3[l3pos].tag] = cache3[l3pos].block;
+                cache3[l3pos] = cache2[l2pos];
+            
+            }
             cache2[l2pos] = cache1[l1pos];
 
-            if(!canOnlyReplaceBlock(cache3[l3pos]))
-                RAM[cache3[l3pos].tag] = cache3[l3pos].block;
-            cache3[l3pos] = cache2[l2pos];
-
+           
 
         }
         cache1[l1pos].block = RAM[add.block];
