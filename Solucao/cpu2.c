@@ -4,6 +4,7 @@
 #include <string.h>
 #include <math.h>
 
+
 #include "cpu.h"
 #include "mmu.h"
 #include "constants.h"
@@ -22,6 +23,24 @@ void start(Machine* machine, Instruction* instructions, int* memoriesSize) {
     machine->missL2 = 0;
     machine->missL3 = 0;
     machine->totalCost = 0;
+    /*
+    machine->l1.lines->tempo = 0;
+    machine->l2.lines->tempo = 0;
+    machine->l3.lines->tempo = 0;
+    */
+    for(int i = 0; i < memoriesSize[1]; i++) {
+        machine->l1.lines[i].estaVazia = 1;
+        machine->l1.lines[i].uso = -1;
+    }
+    for(int i = 0; i < memoriesSize[2]; i++) {
+        machine->l2.lines[i].estaVazia = 1;
+        machine->l2.lines[i].uso = -1;
+    }
+    for(int i = 0; i < memoriesSize[3]; i++) {
+        machine->l3.lines[i].estaVazia = 1;
+        machine->l3.lines[i].uso = -1;
+    }
+   
 }
 
 void stop(Machine* machine) {
@@ -32,15 +51,15 @@ void stop(Machine* machine) {
     stopCache(&machine->l3);
 }
 
-void executeInstruction(Machine* machine, int PC, int map) {
+void executeInstruction(Machine* machine, int PC, int Map_Type) {
     Instruction instruction = machine->instructions[PC];
     // Registers
     int word1, word2;
 
     // Addresses to be consulted
-    Address add1 = instruction.add1;
-    Address add2 = instruction.add2;
-    Address add3 = instruction.add3;
+    Address add1 = instruction.add1; //termo 1
+    Address add2 = instruction.add2; //termo 2
+    Address add3 = instruction.add3; //termo 3
     
     // Line find in memory
     Line* line;
@@ -50,13 +69,13 @@ void executeInstruction(Machine* machine, int PC, int map) {
             printf("  > Ending execution.\n");
             break;
         case 0: // Taking information to RAM
-            line = MMUSearchOnMemorys(add1, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add1, machine, Map_Type); /* Searching block on memories */
             word1 = line->block.words[add1.word];
             #ifdef PRINT_LOG
                 printf("  > MOV BLOCK[%d.%d.%d](%4d) > ", line->cacheHit, add1.block, add1.word, line->block.words[add1.word]);
             #endif
             
-            line = MMUSearchOnMemorys(add2, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add2, machine, Map_Type); /* Searching block on memories */
             #ifdef PRINT_LOG
                 printf("BLOCK[%d.%d.%d](%4d|", line->cacheHit, add2.block, add2.word, line->block.words[add2.word]);
             #endif
@@ -68,19 +87,19 @@ void executeInstruction(Machine* machine, int PC, int map) {
             #endif
             break;
         case 1: // Sum
-            line = MMUSearchOnMemorys(add1, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add1, machine, Map_Type); /* Searching block on memories */
             word1 = line->block.words[add1.word];
             #ifdef PRINT_LOG
                 printf("  > SUM BLOCK[%d.%d.%d](%4d)", line->cacheHit, add1.block, add1.word, line->block.words[add1.word]);
             #endif
 
-            line = MMUSearchOnMemorys(add2, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add2, machine, Map_Type); /* Searching block on memories */
             word2 = line->block.words[add2.word];
             #ifdef PRINT_LOG
                 printf(" + BLOCK[%d.%d.%d](%4d)", line->cacheHit, add2.block, add2.word, line->block.words[add2.word]);
             #endif
 
-            line = MMUSearchOnMemorys(add3, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add3, machine, Map_Type); /* Searching block on memories */
             #ifdef PRINT_LOG
                 printf(" > BLOCK[%d.%d.%d](%4d|", line->cacheHit, add3.block, add3.word, line->block.words[add3.word]);
             #endif
@@ -92,19 +111,19 @@ void executeInstruction(Machine* machine, int PC, int map) {
             #endif
             break;
         case 2: // Subtract
-            line = MMUSearchOnMemorys(add1, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add1, machine, Map_Type); /* Searching block on memories */
             word1 = line->block.words[add1.word];
             #ifdef PRINT_LOG
                 printf("  > SUB BLOCK[%d.%d.%d](%4d)", line->cacheHit, add1.block, add1.word, line->block.words[add1.word]);
             #endif
 
-            line = MMUSearchOnMemorys(add2, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add2, machine, Map_Type); /* Searching block on memories */
             word2 = line->block.words[add2.word];
             #ifdef PRINT_LOG
                 printf(" - BLOCK[%d.%d.%d](%4d)", line->cacheHit, add2.block, add2.word, line->block.words[add2.word]);
             #endif
 
-            line = MMUSearchOnMemorys(add3, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add3, machine, Map_Type); /* Searching block on memories */
             #ifdef PRINT_LOG
                 printf(" > BLOCK[%d.%d.%d](%4d|", line->cacheHit, add3.block, add3.word, line->block.words[add3.word]);
             #endif
@@ -126,16 +145,16 @@ void executeInstruction(Machine* machine, int PC, int map) {
     #endif
 }
 
-void run(Machine* machine, int map) {    
+void run(Machine* machine, int Map_Type) {    
     int PC = 0; // Program Counter
     while(machine->instructions[PC].opcode != -1) {
-        executeInstruction(machine, PC++, map);
+        executeInstruction(machine, PC++, Map_Type); //onde são feitas as operções.
         printf("\tL1:(%6d, %6d) | L2:(%6d, %6d) | L3:(%6d, %6d) | RAM:(%6d) | COST: %d\n", 
             machine->hitL1, machine->missL1, 
-            machine->hitL2, machine->missL2,
-            machine->hitL3, machine->missL3, 
+            machine->hitL2, machine->missL2, 
+            machine->hitL3, machine->missL3,
             machine->hitRAM,
-            machine->totalCost);
+            machine->totalCost); //onde ocorre o print.
     }
 }
 
@@ -153,40 +172,46 @@ void printcolored(int n, bool updated) {
 }
 
 void printMemories(Machine* machine) {
+    
+    printf("\n");
     printf("\x1b[0;30;47m     ");
     printc("RAM", WORDS_SIZE * 8 - 1);
     printc("Cache L3", WORDS_SIZE * 8 + 6);
-    printc("Cache L2", WORDS_SIZE * 8 + 6);
-    printc("Cache L1", WORDS_SIZE * 8 + 6);
+    printc("Cache L2", WORDS_SIZE * 8 + 6 );
+    printc("Cache L1", WORDS_SIZE * 8 + 6 );
     printf("\x1b[0m\n");
+
     for (int i=0;i<machine->ram.size;i++) {
         printf("\x1b[0;30;47m%5d|\x1b[0m", i);
-        for (int j=0;j<WORDS_SIZE;j++){
+
+        for (int j=0; j < WORDS_SIZE;j++)
             printf(" %5d |", machine->ram.blocks[i].words[j]);
-        }
-            //Print L3
-            if (i < machine->l3.size) {
+
+        if (i < machine->l3.size) {
             printf("|");
             printcolored(machine->l3.lines[i].tag, machine->l3.lines[i].updated);
-                for (int j=0;j<WORDS_SIZE;j++){
-                    printf(" %5d |", machine->l3.lines[i].block.words[j]);
+
+            for (int j=0; j < WORDS_SIZE;j++)
+                printf(" %5d |", machine->l3.lines[i].block.words[j]);
+
+            if (i < machine -> l2.size) {
+                printf("|");
+                printcolored(machine->l2.lines[i].tag, machine->l2.lines[i].updated);
+            
+        
+                for (int j=0; j < WORDS_SIZE;j++)
+                    printf(" %5d |", machine->l2.lines[i].block.words[j]);
+
+                if (i < machine -> l1.size) {
+                    printf("|");
+                    printcolored(machine->l1.lines[i].tag, machine->l1.lines[i].updated);
+                    for (int j=0; j < WORDS_SIZE;j++)
+                        printf(" %5d |", machine->l1.lines[i].block.words[j]);
                 }
-                    //Print L2
-                    if (i < machine->l2.size) {
-                        printf("|");
-                        printcolored(machine->l2.lines[i].tag, machine->l2.lines[i].updated);
-                        for (int j=0;j<WORDS_SIZE;j++)
-                            printf(" %5d |", machine->l2.lines[i].block.words[j]);
-                        
-                        //Print L1
-                        if (i < machine->l1.size) {
-                            printf("|");
-                            printcolored(machine->l1.lines[i].tag, machine->l1.lines[i].updated);
-                            for (int j=0;j<WORDS_SIZE;j++)
-                                printf(" %5d |", machine->l1.lines[i].block.words[j]);
-                        }
-                    }
+                
             }
-        printf("\n");
+        }
+       printf("\n");
     }
+    printf("\n");
 }
