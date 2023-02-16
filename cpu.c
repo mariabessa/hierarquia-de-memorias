@@ -32,7 +32,7 @@ void stop(Machine* machine) {
     stopCache(&machine->l3);
 }
 
-void executeInstruction(Machine* machine, int PC, int map) {
+void executeInstruction(Machine* machine, int PC) {
     Instruction instruction = machine->instructions[PC];
     // Registers
     int word1, word2;
@@ -50,13 +50,13 @@ void executeInstruction(Machine* machine, int PC, int map) {
             printf("  > Ending execution.\n");
             break;
         case 0: // Taking information to RAM
-            line = MMUSearchOnMemorys(add1, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add1, machine); /* Searching block on memories */
             word1 = line->block.words[add1.word];
             #ifdef PRINT_LOG
                 printf("  > MOV BLOCK[%d.%d.%d](%4d) > ", line->cacheHit, add1.block, add1.word, line->block.words[add1.word]);
             #endif
             
-            line = MMUSearchOnMemorys(add2, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add2, machine); /* Searching block on memories */
             #ifdef PRINT_LOG
                 printf("BLOCK[%d.%d.%d](%4d|", line->cacheHit, add2.block, add2.word, line->block.words[add2.word]);
             #endif
@@ -68,19 +68,19 @@ void executeInstruction(Machine* machine, int PC, int map) {
             #endif
             break;
         case 1: // Sum
-            line = MMUSearchOnMemorys(add1, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add1, machine); /* Searching block on memories */
             word1 = line->block.words[add1.word];
             #ifdef PRINT_LOG
                 printf("  > SUM BLOCK[%d.%d.%d](%4d)", line->cacheHit, add1.block, add1.word, line->block.words[add1.word]);
             #endif
 
-            line = MMUSearchOnMemorys(add2, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add2, machine); /* Searching block on memories */
             word2 = line->block.words[add2.word];
             #ifdef PRINT_LOG
                 printf(" + BLOCK[%d.%d.%d](%4d)", line->cacheHit, add2.block, add2.word, line->block.words[add2.word]);
             #endif
 
-            line = MMUSearchOnMemorys(add3, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add3, machine); /* Searching block on memories */
             #ifdef PRINT_LOG
                 printf(" > BLOCK[%d.%d.%d](%4d|", line->cacheHit, add3.block, add3.word, line->block.words[add3.word]);
             #endif
@@ -92,19 +92,19 @@ void executeInstruction(Machine* machine, int PC, int map) {
             #endif
             break;
         case 2: // Subtract
-            line = MMUSearchOnMemorys(add1, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add1, machine); /* Searching block on memories */
             word1 = line->block.words[add1.word];
             #ifdef PRINT_LOG
                 printf("  > SUB BLOCK[%d.%d.%d](%4d)", line->cacheHit, add1.block, add1.word, line->block.words[add1.word]);
             #endif
 
-            line = MMUSearchOnMemorys(add2, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add2, machine); /* Searching block on memories */
             word2 = line->block.words[add2.word];
             #ifdef PRINT_LOG
                 printf(" - BLOCK[%d.%d.%d](%4d)", line->cacheHit, add2.block, add2.word, line->block.words[add2.word]);
             #endif
 
-            line = MMUSearchOnMemorys(add3, machine, map); /* Searching block on memories */
+            line = MMUSearchOnMemorys(add3, machine); /* Searching block on memories */
             #ifdef PRINT_LOG
                 printf(" > BLOCK[%d.%d.%d](%4d|", line->cacheHit, add3.block, add3.word, line->block.words[add3.word]);
             #endif
@@ -126,10 +126,10 @@ void executeInstruction(Machine* machine, int PC, int map) {
     #endif
 }
 
-void run(Machine* machine, int map) {    
+void run(Machine* machine) {    
     int PC = 0; // Program Counter
     while(machine->instructions[PC].opcode != -1) {
-        executeInstruction(machine, PC++, map);
+        executeInstruction(machine, PC++);
         printf("\tL1:(%6d, %6d) | L2:(%6d, %6d) | L3:(%6d, %6d) | RAM:(%6d) | COST: %d\n", 
             machine->hitL1, machine->missL1, 
             machine->hitL2, machine->missL2,

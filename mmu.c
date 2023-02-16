@@ -10,33 +10,15 @@ bool canOnlyReplaceBlock(Line line) {
     return false;
 }
 
-int memoryCacheMapping(int address, Cache* cache, int map){
+int memoryCacheMapping(int address, Cache* cache){
 
-    //Mexer aqui, mapeamento
-    
-    switch(map)
-    {
-
-        case 1:     //Direto
-            return address % cache->size;
-            break;
-
-        case 2:     //Last Recent Used
-
-            return 0;
-            break;
-
-        case 3:     //
-            return 0;
-            break;
-    }
-
-    return 0;
+    return address % cache->size;
 }
         //usar contadores nos cases abaixo para fazer o mapeamento asssociativo, e os que tiver menor numero é o resultado
 
 
 void updateMachineInfos(Machine* machine, Line* line) {
+        
     switch (line->cacheHit) {
         case 1:
             machine->hitL1 += 1;
@@ -61,16 +43,17 @@ void updateMachineInfos(Machine* machine, Line* line) {
             machine->missL3 += 1;
             break;
     }
+
     machine->totalCost += line->cost;
 }
 
-Line* MMUSearchOnMemorys(Address add, Machine* machine, int map) {
+Line* MMUSearchOnMemorys(Address add, Machine* machine) {
     // Strategy => write back
     
     // Direct memory map
-    int l1pos = memoryCacheMapping(add.block, &machine->l1, map);
-    int l2pos = memoryCacheMapping(add.block, &machine->l2, map);
-    int l3pos = memoryCacheMapping(add.block, &machine->l3, map);
+    int l1pos = memoryCacheMapping(add.block, &machine->l1);
+    int l2pos = memoryCacheMapping(add.block, &machine->l2);
+    int l3pos = memoryCacheMapping(add.block, &machine->l3);
 
     Line* cache1 = machine->l1.lines;
     Line* cache2 = machine->l2.lines;
@@ -103,9 +86,9 @@ Line* MMUSearchOnMemorys(Address add, Machine* machine, int map) {
     else{ 
 
         /* Block only in memory RAM, need to bring it to cache and manipulate the blocks */
-        l2pos = memoryCacheMapping(cache1[l1pos].tag, &machine->l2, map); /* Need to check the position of the block that will leave the L1 */
+        l2pos = memoryCacheMapping(cache1[l1pos].tag, &machine->l2); /* Need to check the position of the block that will leave the L1 */
 
-        l3pos = memoryCacheMapping(cache2[l2pos].tag, &machine->l3, map);
+        l3pos = memoryCacheMapping(cache2[l2pos].tag, &machine->l3);
 
         if (!canOnlyReplaceBlock(cache1[l1pos])) { 
         

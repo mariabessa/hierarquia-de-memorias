@@ -17,7 +17,7 @@ typedef struct {
 
 void start(Machine*, Instruction*, int*);
 void stop(Machine*);
-void run(Machine*, int);
+void run(Machine*);
 void printMemories(Machine*);
 
 #endif // !CPU_H

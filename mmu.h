@@ -5,6 +5,6 @@
 #include "instruction.h"
 #include "cpu.h"
 
-Line* MMUSearchOnMemorys(Address, Machine*, int);
+Line* MMUSearchOnMemorys(Address, Machine*);
 
 #endif // !MMU_H
